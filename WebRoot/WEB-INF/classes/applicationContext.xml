@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 引入外部文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties" />
+	<!-- 配置连接池 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driver}" />
+		<property name="jdbcUrl" value="${jdbc.url}" />
+		<property name="user" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+
+	<!-- 配置Hibernate -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+		<!-- 指定model扫描的包 -->
+		<property name="packagesToScan">
+			<list>
+				<value>model</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 配置事务管理器 -->
+	<bean name="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<!-- 开启注解事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<!-- 配置Action -->
+	<bean id="userAction" class="action.UserAction" scope="prototype">
+		<property name="userService" ref="userService" />
+	</bean>
+	<bean id="onSellItemAction" class="action.OnSellItemAction" scope="prototype">
+		<property name="onSellItemService" ref="onSellItemService" />
+	</bean>
+	<bean id="tradeAction" class="action.TradeAction" scope="prototype">
+		<property name="tradeService" ref="tradeService" /> 
+		<property name="onSellItemService" ref="onSellItemService" />
+	</bean>
+	<bean id="bookAction" class="action.BookAction" scope="prototype">
+		<property name="bookService" ref="bookService" />
+	</bean>
+	<bean id="afterSellAction" class="action.AfterSellAction" scope="prototype">
+		<property name="afterSellService" ref="afterSellService" />
+	</bean>
+
+	<!-- 配置Service -->
+	<bean id="userService" class="service.impl.UserServiceImpl">
+		<property name="userDao" ref="userDao" />
+	</bean>
+	<bean id="onSellItemService" class="service.impl.OnSellItemServiceImpl">
+		<property name="onSellItemDao" ref="onSellItemDao" />
+		<property name="userDao" ref="userDao" />
+		<property name="tradeDao" ref="tradeDao" />
+	</bean>
+	<bean id="tradeService" class="service.impl.TradeServiceImpl">
+		<property name="tradeDao" ref="tradeDao" />
+		<property name="userDao" ref="userDao" />
+		<property name="onSellItemDao" ref="onSellItemDao" />
+	</bean>
+	<bean id="bookService" class="service.impl.BookServiceImpl">
+		<property name="bookDao" ref="bookDao" />
+	</bean>
+	<bean id="afterSellService" class="service.impl.AfterSellServiceImpl">
+		<property name="afterSellOrderDao" ref="afterSellOrderDao" />
+		<property name="tradeDao" ref="tradeDao" />
+		<property name="userDao" ref="userDao" />
+	</bean>
+
+	<!-- 配置Dao -->
+	<bean id="baseDao" class="dao.BaseDao">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<bean id="bookDao" class="dao.impl.BookDao" parent="baseDao" />
+	<bean id="onSellItemDao" class="dao.impl.OnSellItemDao" parent="baseDao" />
+	<bean id="afterSellOrderDao" class="dao.impl.AfterSellOrderDao"
+		parent="baseDao" />
+	<bean id="tradeDao" class="dao.impl.TradeDao" parent="baseDao" />
+	<bean id="userDao" class="dao.impl.UserDao" parent="baseDao" />
+
+</beans>

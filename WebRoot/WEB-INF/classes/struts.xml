@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN" "http://struts.apache.org/dtds/struts-2.1.dtd">
+<struts>
+	<!-- 清除struts标签样式 -->
+	<constant name="struts.ui.theme" value="simple" />
+	<constant name="struts.ui.templateDir" value="template" />
+	<constant name="struts.ui.templateSuffix" value="ftl" />
+
+
+	<package name="ssh" extends="struts-default" namespace="/">
+		<!-- 定义拦截器栈 -->
+		<interceptors>
+			<interceptor name="loginInterceptor" class="interceptot.LoginInterceptor">
+			</interceptor>
+			<interceptor-stack name="loginStack">
+				<interceptor-ref name="defaultStack" />
+				<interceptor-ref name="loginInterceptor" />
+			</interceptor-stack>
+		</interceptors>
+		<default-interceptor-ref name="loginStack"></default-interceptor-ref>
+
+		<!-- 业务相关Action -->
+		<!-- 用户相关Action -->
+		<action name="user_*" class="action.UserAction" method="{1}">
+			<!-- 登陆页面,登录失败 -->
+			<result name="input">/index.jsp</result>
+			<!-- 登录成功，进行Action的跳转，跳到OnSellItem的Action中，展示出售物品 -->
+			<result name="login_success" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">osi_index</param>
+			</result>
+			<result name="signUp_success">/index.jsp</result>
+			<result name="success">/my_account.jsp</result>
+			<result name="edit_succ" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">user_myAccount</param>
+			</result>
+			<result name="edit_faild">/my_account.jsp</result>
+			<result name="loginOut_success">/index.jsp</result>
+		</action>
+
+		<!-- 在售物品相关的Action -->
+		<action name="osi_*" class="action.OnSellItemAction" method="{1}">
+			<result name="success">index-2.jsp</result>
+			<!-- 查看详情：成功查询到商品 -->
+			<result name="query_item_success">view.jsp</result>
+			<!-- 查看详情：查询失败 -->
+			<result name="req_success">/needsmarket.jsp</result>
+			<result name="load_faild">/erro.jsp</result>
+			<result name="load_faild_index">/index-2.jsp</result>
+			<result name="load_faild_req">/needsmarket.jsp</result>
+			<result name="input">/index.jsp</result>
+			<result name="get_reqsuccess">/my_needs.jsp</result>
+			<result name="get_itemsuccess">my_goods.jsp</result>
+			<result name="publicsell_success" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">osi_getUserItem</param>
+			</result>
+			<result name="publicsell_faild" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">osi_getUserItem</param>
+			</result>
+			
+			<result name="pubreq_success" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">osi_getUserReqOrder</param>
+			</result>
+			
+			<result name="cancelSell_success" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">osi_getUserItem</param>
+			</result>
+			<result name="cancelSell_faild" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">osi_getUserItem</param>
+			</result>
+			<result name="cancelReq_success" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">osi_getUserReqOrder</param>
+				
+			</result>
+			<result name="cancelReq_faild" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">osi_getUserReqOrder</param>
+				
+			</result>
+			
+			<result name="fyquery_success">
+			/query.jsp
+			</result>
+			
+			<result name="fyquery_faild">
+			/query.jsp
+			</result>
+			<result name="erro">
+			/erro.jsp
+			</result>
+		</action>
+
+		<!-- 订单相关Action -->
+		<action name="trade_*" class="action.TradeAction" method="{1}">
+			<result name="prep_success">/cart.jsp</result>
+			<result name="prep_faild">/index-2.jsp</result>
+			<!-- 确认订单，下单，跳转到用户订单列表 -->
+			<result name="confirm" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">trade_myOrders</param>
+			</result>
+			<result name="confirm_faild">/erro.jsp</result>
+			<result name="input">/erro.jsp</result>
+			<!-- 获取用户订单 -->
+			<result name="get_orders_faild">/my_order.jsp</result>
+			<result name="get_orders_succ">/my_order.jsp</result>
+			<result name="success" type="chain">
+				<param name="namespace">/</param>
+				<param name="actionName">trade_myOrders</param>
+			</result>
+		</action>
+
+		<!-- 书相关Action -->
+		<action name="book_*" class="action.BookAction" method="{1}">
+			<result name="input">/erro.jsp</result>
+			<result name="faild">/erro.jsp</result>
+			
+			<result>sell_cofirm.jsp</result>
+			<result name="need_success">/need_cofirm.jsp</result>
+		</action>
+
+		<!-- 售后相关Action -->
+		<action name="aftersell_*" class="action.AfterSellAction"
+			method="{1}">
+			<result name="input">/erro.jsp</result>
+			<result name="success" type="chain">
+				<param name="namespace">/</param>
+				<!-- 提交售后单以后跳转到订单列表 -->
+				<param name="actionName">trade_myOrders</param>
+			</result>
+			<result name="faild">
+				/erro.jsp
+			</result>
+		</action>
+	</package>
+</struts>
+
